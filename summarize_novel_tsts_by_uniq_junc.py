@@ -10,7 +10,7 @@ import os
 # get the sequencing depth for all samples by processing STAR Log.final.out files
 
 all_depth = {}
-files_dir = 'D:\\MCGDYY\\ont_second_run\\star_stats\\'
+files_dir = 'D:\\MCGDYY\\ont_project\\star_stats\\'
 for file in os.listdir(files_dir):
 	if re.search('Log.final.out', file) is not None:
 		sample = file[:6]
@@ -25,20 +25,21 @@ for file in os.listdir(files_dir):
 
 # initialize a table with columns of all novel transcripts with unique junctions
 
-uniq_junc_novel_trans = pd.read_csv('D:\\MCGDYY\\ont_second_run\\new_methods\\list_of_novel_trans_with_uniq_junc.csv')
+uniq_junc_novel_trans = pd.read_csv('D:\\MCGDYY\\ont_project\\list_of_novel_trans_with_uniq_junc.csv')
 uniq_junc_novel_trans = uniq_junc_novel_trans['transcript']
 cols = []
 for i in uniq_junc_novel_trans:
 	cols.append(i + '_N')
 	cols.append(i + '_T')
+	cols.append(i + '_value')
 	cols.append(i + '_status')
 sum_table = pd.DataFrame(columns = cols)
 
 
-# takes the outputs from get_uniq_junc_reads_of_novel_mul_ex_trans.py
-# for a novel transcript with multiple unique junctions, average the all unique junction reads
+# take the outputs from get_uniq_junc_reads_of_novel_mul_ex_trans.py,
+# for a novel transcript with multiple unique junctions, average all the unique junction reads
 
-res_dir = 'D:\\MCGDYY\\ont_second_run\\new_methods\\novel_trans_with_uniq_junc\\'
+res_dir = 'D:\\MCGDYY\\ont_project\\novel_trans_with_uniq_junc\\'
 for sample in os.listdir(res_dir):
 	sample_path = res_dir + sample
 	sample_id = sample[:4] # patient ID
@@ -69,7 +70,7 @@ for sample in os.listdir(res_dir):
 				(sum_table.loc[sample_id, transcript + '_N'] + uniq_reads) / trans_counter[transcript]
 
 sum_table = sum_table.fillna(value = 0)
-sum_table.to_csv('D:\\MCGDYY\\ont_second_run\\new_methods\\sum_novel_mul_trans_uniq_junc.csv')
+sum_table.to_csv('D:\\MCGDYY\\ont_project\\quantification\\sum_novel_mul_trans_uniq_junc.csv')
 
 
 # normalize read counts in sum_table for total sequencing depth
@@ -85,7 +86,7 @@ for sample_id in sum_table.index:
 			sum_table.loc[sample_id, col] = sum_table.loc[sample_id, col] * 1000000000 / depth
 
 
-sum_table.to_csv('D:\\MCGDYY\\ont_second_run\\new_methods\\sum_norm_novel_mul_trans_uniq_junc.csv')
+sum_table.to_csv('D:\\MCGDYY\\ont_project\\quantification\\sum_norm_novel_mul_trans_uniq_junc.csv')
 
 
 
