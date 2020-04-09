@@ -18,7 +18,7 @@ for col in mul.columns:
 		for sample in mul.index:
 			N_exp = mul.loc[sample, trans + '_N']
 			T_exp = mul.loc[sample, trans + '_T']
-			mul.loc[sample, trans + '_status'] = (T_exp + 1) / (N_exp + 1)
+			mul.loc[sample, trans + '_FC'] = (T_exp + 1) / (N_exp + 1)
 
 			if N_exp == 0 and T_exp > 0:
 				sum_table.loc[trans, 'frequency'] += 1
@@ -33,7 +33,7 @@ mul_tsts_filtered = sum_table[sum_table['frequency'] > sample_size * 0.3]
 
 
 for col in mul.columns:
-	if re.search('_status', col) is not None:
+	if re.search('_FC', col) is not None:
 		trans = col[:-7]
 		median = mul[col].median()
 
