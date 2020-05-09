@@ -1,36 +1,45 @@
 import pandas as pd
-import csv
 
-intron_gtf = pd.read_csv('D:\\MCGDYY\\ont_project\\gtf_files\\introns.gtf', sep = '\t', chunksize = 10000, header= None,\
+# get all introns of annotated transcripts
+anno_trans_introns = pd.read_csv('D:\\MCGDYY\\ont_project\\gtf_files\\anno_trans_introns.gtf', sep = '\t', chunksize = 10000, header= None,\
 						names = ['chromosome', 'source', 'type', 'start', 'end', 'none1', 'strand', 'none2', 'info'])
-intron_gtf = pd.concat(intron_gtf, ignore_index = True)
-# retained only annotated introns
-anno_intron = intron_gtf[intron_gtf['source'] != 'FLAIR']
+anno_trans_introns = pd.concat(intron_gtf, ignore_index = True)
 
 # get all exons of novel transcripts
-flair_ex_gtf = pd.read_csv('D:\\MCGDYY\\ont_project\\flair_out\\flair.collapse.isoforms.stringent.gtf', header = None, sep = '\t',
+novel_trans_exons = pd.read_csv('D:\\MCGDYY\\ont_project\\flair_out\\novel_trans_exons.gtf', header = None, sep = '\t',
 						names = ['chromosome', 'source', 'type', 'start', 'end', 'none1', 'strand', 'none2', 'info'])
-ex_novel = flair_ex_gtf[-flair_ex_gtf['info'].str.contains('ENST')]
-# sort the df
-ex_novel.sort_values(by = 'chromosome', inplace = True)
-ex_novel.reset_index(drop = True, inplace = True)
 
-# iteration
-retained_introns = pd.DataFrame(columns = ['chromosome', 'source', 'type', 'start', 'end', 'none1', 'strand', 'none2', 'info'])
-for i in anno_intron.index:
-	in_chr = anno_intron.loc[i, 'chromosome']
-	in_start = anno_intron.loc[i, 'start']
-	in_end = anno_intron.loc[i, 'end']
+# check if intronic regions are included in the novel transcripts
+retained_introns = ''
+for i in anno_trans_introns.index:
+	in_chr = anno_trans_introns.loc[i, 'chromosome']
+	in_start = anno_trans_introns.loc[i, 'start']
+	in_end = anno_trans_introns.loc[i, 'end']
+	in_strand = anno_trans_introns.loc[i, 'strand']
 
-	tmp_df = ex_novel[ex_novel['chromosome'] == str(in_chr)]
+	# select specific chromosome
+	tmp_df = novel_trans_exons[novel_trans_exons['chromosome'] == str(in_chr)]
 	for k in tmp_df.index:
-		ex_start = tmp_df.loc[k, 'start']
-		ex_end = tmp_df.loc[k, 'end']
+		ex_strand = tmp_df.loc[k, 'strand']
+		# make sure they are both on the same strand
+		if in_strand == ex_strand:
+			ex_start = tmp_df.loc[k, 'start']
+			ex_end = tmp_df.loc[k, 'end']
 
+		# full intron retaintion
 		if in_start >= ex_start and in_end <= ex_end:
-			line = anno_intron.loc[i]
-			line['info'] =  tmp_df.loc[k, 'info']
-			retained_introns = retained_introns.append(line)
+			retained_introns += str(in_chr) + '\t' + '*' + '\t' + 'intron' + '\t' + str(in_start) + '\t' + str(in_end) + '\t' 
+			+ 'IR' + '\t' + in_strand + '\t' + '*' + '\t' + tmp_df.loc[k, 'info'] + '\n'
 
-retained_introns.to_csv('D:\\MCGDYY\\ont_project\\retained_introns.gtf', 
-	header = None, index = False, sep = '\t', quoting = csv.QUOTE_NONE)
+		# alternative 5' splice site
+		if in_start <= ex_end and in_end >= ex_end:
+			retained_introns += str(in_chr) + '\t' + '*' + '\t' + 'intron' + '\t' + str(in_start) + '\t' + str(ex_end) + '\t' 
+			+ 'ALT5' + '\t' + in_strand + '\t' + '*' + '\t' + tmp_df.loc[k, 'info'] + '\n'
+
+		# alternative 3' splice site
+		if in_start <= ex_start and in_end >= ex_start:
+			retained_introns += str(in_chr) + '\t' + '*' + '\t' + 'intron' + '\t' + str(ex_start) + '\t' + str(in_end) + '\t' 
+			+ 'ALT3' + '\t' + in_strand + '\t' + '*' + + '\t' tmp_df.loc[k, 'info'] + '\n'
+
+with open('D:\\MCGDYY\\ont_project\\retained_introns.gtf', 'w') as w:
+	w.write(retained_introns)
