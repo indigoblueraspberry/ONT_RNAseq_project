@@ -1,13 +1,15 @@
 import pandas as pd
 
 # get all introns of annotated transcripts
-anno_trans_introns = pd.read_csv('D:\\MCGDYY\\ont_project\\gtf_files\\anno_trans_introns.gtf', sep = '\t', chunksize = 10000, header= None,\
-						names = ['chromosome', 'source', 'type', 'start', 'end', 'none1', 'strand', 'none2', 'info'])
+anno_trans_introns = pd.read_csv('D:\\MCGDYY\\ont_project\\gtf_files\\anno_trans_introns.gtf', 
+	sep = '\t', chunksize = 10000, header= None, comment = '#',
+	names = ['chromosome', 'source', 'type', 'start', 'end', 'none1', 'strand', 'none2', 'info'])
 anno_trans_introns = pd.concat(anno_trans_introns, ignore_index = True)
 
 # get all exons of novel transcripts
-novel_trans_exons = pd.read_csv('D:\\MCGDYY\\ont_project\\gtf_files\\novel_trans_exons.gtf', header = None, sep = '\t',
-						names = ['chromosome', 'source', 'type', 'start', 'end', 'none1', 'strand', 'none2', 'info'])
+novel_trans_exons = pd.read_csv('D:\\MCGDYY\\ont_project\\gtf_files\\novel_trans_exons.gtf', 
+	header = None, sep = '\t', comment = '#',
+	names = ['chromosome', 'source', 'type', 'start', 'end', 'none1', 'strand', 'none2', 'info'])
 
 # check if intronic regions are included in the novel transcripts
 retained_introns = ''
@@ -17,8 +19,9 @@ for i in anno_trans_introns.index:
 	in_end = anno_trans_introns.loc[i, 'end']
 	in_strand = anno_trans_introns.loc[i, 'strand']
 
-	# select specific chromosome
+	# select specific chromosome and nearby sites to reduce iteration and speed up the script
 	tmp_df = novel_trans_exons[novel_trans_exons['chromosome'] == str(in_chr)]
+	tmp_df = tmp_df[tmp_df['start'] - in_start < 10000]
 	for k in tmp_df.index:
 		ex_strand = tmp_df.loc[k, 'strand']
 		# make sure they are both on the same strand
