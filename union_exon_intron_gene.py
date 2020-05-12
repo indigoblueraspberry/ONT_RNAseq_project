@@ -90,5 +90,5 @@ intron_collector['none2'] = '.'
 
 exon_collector.to_csv('D:\\MCGDYY\\ont_project\\gtf_files\\anno_gene_union_exons.gtf', 
 	header = None, index = False, sep = '\t', quoting = csv.QUOTE_NONE)
-intron_collector.to_csv('D:\\MCGDYY\\ont_project\\gtf_files\\anno_gene_union_intron.gtf', 
+intron_collector.to_csv('D:\\MCGDYY\\ont_project\\gtf_files\\anno_gene_union_introns.gtf', 
 	header = None, index = False, sep = '\t', quoting = csv.QUOTE_NONE)
