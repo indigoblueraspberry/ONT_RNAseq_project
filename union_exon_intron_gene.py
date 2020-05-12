@@ -8,16 +8,26 @@ all_exons =  pd.read_csv('D:\\MCGDYY\\ont_project\\gtf_files\\sub.gtf',
 all_exons = pd.concat(all_exons, ignore_index = True)
 
 # append a column of gene names
+gene_names = []
 for i in all_exons.index:
 	info = all_exons.loc[i, 'info']
-	gene_name = re.findall(r"gene_id \"(.*?)\";", info)[0]
-	all_exons.loc[i, 'gene'] = gene_name
+	pat = re.compile("gene_id \"(.*?)\";")
+	gene_name = re.match(pat, info)[1]
+	gene_names.append(gene_name)
+all_exons['gene'] = gene_names
 
 exon_collector = pd.DataFrame(columns = ['chromosome', 'source', 'type', 'start', 'end', 'none1', 'strand', 'none2', 'info'])
 intron_collector = pd.DataFrame(columns = ['chromosome', 'source', 'type', 'start', 'end', 'none1', 'strand', 'none2', 'info'])
 
 gene_list = set(all_exons['gene'])
+num_genes = len(gene_list)
+count = 1
 for i in gene_list:
+	
+	if count % 1000 == 0:
+		print(str(count) + '/' + str(num_genes))
+	count += 1
+
 	gene_table = all_exons[all_exons['gene'] == i]
 	# avoid single-exon genes
 	if len(gene_table) > 1:
