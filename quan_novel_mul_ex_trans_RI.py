@@ -2,8 +2,7 @@ import pandas as pd
 import re
 import os
 
-novel_trans_RI = pd.read_csv('D:/MCGDYY/ont_project/IR_counts.txt', sep = '\t', index_col = 0, header = 1)
-novel_trans_RI = novel_trans_RI.iloc[:, 5:]
+novel_trans_RI = pd.read_csv('D:/MCGDYY/ont_project/IR_counts.txt', sep = '\t', index_col = 0, header = 0)
 
 cols = []
 for i in novel_trans_RI.index:
@@ -14,15 +13,16 @@ for i in novel_trans_RI.index:
 sum_table = pd.DataFrame(columns = cols)
 
 for i in novel_trans_RI.columns:
-	patient = re.findall("star/(.*?)-", i)[0]
+	patient = re.findall("/(.*?)-", i)[0][-4:]
 	kind = re.findall("-(.*?)_", i)[0]
 	
-	for k in novel_trans_RI.index:
-		counts = novel_trans_RI.loc[k, i]
-		if kind == 1:
-			sum_table.loc[patient, k + '_T'] = counts
-		else:
-			sum_table.loc[patient, k + '_N'] = counts
+	if patient != '1438' and patient != '1483':	# these two patients have missing data
+		for k in novel_trans_RI.index:
+			counts = novel_trans_RI.loc[k, i]
+			if kind == '1':
+				sum_table.loc[patient, k + '_T'] = counts
+			else:
+				sum_table.loc[patient, k + '_N'] = counts
 
 # normalization
 
@@ -40,10 +40,13 @@ for file in os.listdir(files_dir):
 				all_depth[sample] = int(depth)
 
 for sample_id in sum_table.index:
-	for col in sum_table.columns:
-		if re.search('_N', col):
-			depth = all_depth[sample_id + '-2']
-			sum_table.loc[sample_id, col] = sum_table.loc[sample_id, col] * 1000000000 / depth
-		if re.search('_T', col):
-			depth = all_depth[sample_id + '-1']
-			sum_table.loc[sample_id, col] = sum_table.loc[sample_id, col] * 1000000000 / depth
+		for col in sum_table.columns:
+			if re.search('_N', col):
+				depth = all_depth[sample_id + '-2']
+				sum_table.loc[sample_id, col] = sum_table.loc[sample_id, col] * 1000000000 / depth
+			if re.search('_T', col):
+				depth = all_depth[sample_id + '-1']
+				sum_table.loc[sample_id, col] = sum_table.loc[sample_id, col] * 1000000000 / depth
+
+sum_table = sum_table.fillna(0)
+sum_table.to_csv('D:/MCGDYY/ont_project/quantification/sum_norm_novel_mul_trans_RI.csv')
