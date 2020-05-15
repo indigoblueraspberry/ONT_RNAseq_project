@@ -11,6 +11,8 @@ import os
 intron_gtf = pd.read_csv('D:\\MCGDYY\\ont_project\\gtf_files\\introns.gtf', sep = '\t', chunksize = 10000, header= None,\
 						names = ['chromosome', 'source', 'type', 'start', 'end', 'none1', 'strand', 'none2', 'info'])
 intron_gtf = pd.concat(intron_gtf, ignore_index = True)
+# convert the dtype of column 'chromosome' to string, otherwise it will have a mix of different dtypes which will cause problems
+intron_gtf['chromosome'] = intron_gtf['chromosome'].astype('str')
 
 # append two columns of gene and transcript names
 gene = []
@@ -32,7 +34,7 @@ uniq_junc_novel_trans = uniq_junc_novel_trans.reset_index(drop = True)
 
 # create a list of novel transcripts with unique junctions
 dedup_trans = uniq_junc_novel_trans[['gene', 'transcript']].drop_duplicates(subset = 'transcript', keep = 'first')
-dedup_trans.to_csv('D:\\MCGDYY\\ont_project\\list_of_novel_trans_with_uniq_junc.csv', index = False)
+dedup_trans.to_csv('D:\\MCGDYY\\ont_project\\lists\\list_of_novel_trans_with_uniq_junc.csv', index = False)
 
 
 ##################################################### Step 2: process STAR SJ.out.tab to extract junction reads
