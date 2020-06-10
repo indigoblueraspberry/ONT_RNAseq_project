@@ -1,8 +1,6 @@
-from Bio.Seq import Seq
-import re
-
-
 # 6-frame-shift translation of all novel transcripts and further process into fragments stopping at the stop codon
+
+from Bio.Seq import Seq
 
 def fragmenting (aa_seq, pep_name):
     fragment = ''
@@ -16,7 +14,7 @@ def fragmenting (aa_seq, pep_name):
             # only retain fragments > 6 aa
             if len(fragment) >= 6:
                 # only retain fragments containing K or R
-                if re.search('K', fragment) is not None or re.search('R', fragment) is not None:
+                if 'K' in fragment or 'R' in fragment:
                     collector += pep_name + '_' + str(frag_count) + '\n'
                     collector += fragment + '\n'
                     frag_count += 1
@@ -34,7 +32,7 @@ with open('D:\\MCGDYY\\ont_project\\flair_out\\flair.collapse.isoforms.stringent
     
     for i in range(len(lines)):
         # look for novel transcripts
-        if i % 2 == 0 and re.search('ENST', lines[i]) is None:
+        if i % 2 == 0 and 'ENST' not in lines[i]:
             trans_name = lines[i]
             
             for k in range(3):
@@ -49,7 +47,7 @@ with open('D:\\MCGDYY\\ont_project\\flair_out\\flair.collapse.isoforms.stringent
                 all_fragments += fragmenting(peptide_seq_f, peptide_name_f)            
                 
                 # reverse translation
-                rna_seq_r = Seq(lines[i+1][k:]).reverse_complement()
+                rna_seq_r = Seq(lines[i+1]).reverse_complement()[k:]
                 peptide_seq_r = rna_seq_r.translate()
                 peptide_name_r = trans_name + '_r_' + str(k+1)
                 
@@ -64,4 +62,4 @@ with open('D:\\MCGDYY\\ont_project\\MS\\novel_peptides.fa', 'w') as w:
 
 
 with open('D:\\MCGDYY\\ont_project\\MS\\novel_peptide_fragments.fa', 'w') as w:
-    w.write(all_fragments)    
+    w.write(all_fragments)  

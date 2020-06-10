@@ -25,7 +25,7 @@ for file in os.listdir(files_dir):
 
 # initialize a table with columns of all novel transcripts with unique junctions
 
-uniq_junc_novel_trans = pd.read_csv('D:\\MCGDYY\\ont_project\\list_of_novel_trans_with_uniq_junc.csv')
+uniq_junc_novel_trans = pd.read_csv('D:\\MCGDYY\\ont_project\\lists\\list_of_novel_trans_with_uniq_junc.csv')
 uniq_junc_novel_trans = uniq_junc_novel_trans['transcript']
 cols = []
 for i in uniq_junc_novel_trans:
@@ -70,7 +70,7 @@ for sample in os.listdir(res_dir):
 				(sum_table.loc[sample_id, transcript + '_N'] + uniq_reads) / trans_counter[transcript]
 
 sum_table = sum_table.fillna(value = 0)
-sum_table.to_csv('D:\\MCGDYY\\ont_project\\quantification\\sum_novel_mul_trans_uniq_junc.csv')
+# sum_table.to_csv('D:\\MCGDYY\\ont_project\\quantification\\sum_novel_mul_trans_uniq_junc.csv')
 
 
 # normalize read counts in sum_table for total sequencing depth
@@ -87,7 +87,3 @@ for sample_id in sum_table.index:
 
 
 sum_table.to_csv('D:\\MCGDYY\\ont_project\\quantification\\sum_norm_novel_mul_trans_uniq_junc.csv')
-
-
-
-

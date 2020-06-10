@@ -89,7 +89,7 @@ p2 <- ggplot(sig_res, aes(x = order, y = 1, fill = p.value)) +
       coord_fixed(ratio = 10)
 
 # jump out of R and use python to process sig_res.csv and get FC_info
-fc_info <- read.csv('D:\\MCGDYY\\ont_project\\prognosis\\FC_info_os.txt', header = TRUE, sep = '\t')
+fc_info <- read.csv('D:\\MCGDYY\\ont_project\\prognosis\\FC_boxplot_os.csv', header = TRUE)
 
 # plot log2FC and lable up and down regulations
 
@@ -180,7 +180,7 @@ p2 <- ggplot(sig_res, aes(x = order, y = 1, fill = p.value)) +
   coord_fixed(ratio = 10)
 
 # jump out of R and use python to process sig_res.csv and get FC_info
-fc_info <- read.csv('D:\\MCGDYY\\ont_project\\prognosis\\FC_info_rfs.txt', header = TRUE, sep = '\t')
+fc_info <- read.csv('D:\\MCGDYY\\ont_project\\prognosis\\FC_boxplot_rfs.csv', header = TRUE)
 
 # plot log2FC and lable up and down regulations
 
