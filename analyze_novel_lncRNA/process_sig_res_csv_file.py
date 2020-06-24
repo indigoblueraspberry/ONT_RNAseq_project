@@ -38,6 +38,7 @@ for i in clinical_trans.index:
 			clinical_trans.loc[i, 'status'] = 'no_diff'
 	else:
 		clinical_trans.loc[i, 'status'] = 'no_diff'
+# clinical_trans.to_csv('D:\\MCGDYY\\ont_project\\prognosis\\union_os_rfs_detailed.csv')
 
 # create tables for boxplots
 def boxplot_table(para):	# para is either os or rfs
