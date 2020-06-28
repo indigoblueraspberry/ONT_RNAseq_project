@@ -3,9 +3,9 @@
 
 import pandas as pd
 
-CNCI_df = pd.read_csv('D:\\MCGDYY\\ont_project\\prog_assoc_trans\\CNCI_out.txt', sep = '\t')
-CPC2_df = pd.read_csv('D:\\MCGDYY\\ont_project\\prog_assoc_trans\\CPC2_out.txt', sep = '\t')
-PLEK_df = pd.read_csv('D:\\MCGDYY\\ont_project\\prog_assoc_trans\\PLEK_out.txt', sep = '\t', header = None)
+CNCI_df = pd.read_csv('D:\\MCGDYY\\ont_project\\lncRNA\\CNCI_out.txt', sep = '\t')
+CPC2_df = pd.read_csv('D:\\MCGDYY\\ont_project\\lncRNA\\CPC2_out.txt', sep = '\t')
+PLEK_df = pd.read_csv('D:\\MCGDYY\\ont_project\\lncRNA\\PLEK_out.txt', sep = '\t', header = None)
 MS_df = pd.read_csv('D:\\MCGDYY\\ont_project\\MS\\new_DDA\\refined_dda.csv', index_col = 0)
 sum_table = pd.DataFrame(columns = ['CNCI', 'CPC2', 'PLEK', 'MS'])
 
@@ -64,7 +64,6 @@ def sum_data(feature):	# feature is either coding or noncoding
 	# CNCI & CPC2 & PLEK
 	final = sum_table[(sum_table['CPC2'] == feature) & (sum_table['PLEK'] == feature) & (sum_table['CNCI'] == feature)]
 	print(feature + ' intersection among three: ' + str(len(final)))
-	# final.to_csv('D:\\MCGDYY\\ont_project\\prog_assoc_trans\\novel_lncRNA\\intersec_novel_lncRNA.csv')
+	final.to_csv('D:\\MCGDYY\\ont_project\\lncRNA\\intersec_novel_lncRNA.csv')
 
 sum_data('noncoding')
-
