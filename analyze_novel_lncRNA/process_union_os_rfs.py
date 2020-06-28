@@ -22,9 +22,12 @@ for i in clinical_trans.index:
 	mean_log2FC = FC_col.mean()
 	clinical_trans.loc[i, 'mean_log2FC'] = mean_log2FC
 
-# adjust p-value for multiple comparison using FDRs
+# adjust p-value for multiple comparison using FDRs and annotate novel transcripts
+gene_list = pd.read_csv('D:\\MCGDYY\\ont_project\\lists\\all_novel_list.txt', sep = '\t', header = None, index_col = 0)
 fdr_bh_p = multipletests(clinical_trans['Wilcoxon_p'], method='fdr_bh')[1]
 clinical_trans['BH_FDR_p'] = fdr_bh_p
+seq_table = open('D:\\MCGDYY\\ont_project\\new\\novel_uniq_RI_real_seq_200bp.fa', 'r')
+extracted_seq = ''
 # define up or down 
 for i in clinical_trans.index:
 	mean_log2FC = clinical_trans.loc[i, 'mean_log2FC']
@@ -38,7 +41,27 @@ for i in clinical_trans.index:
 			clinical_trans.loc[i, 'status'] = 'no_diff'
 	else:
 		clinical_trans.loc[i, 'status'] = 'no_diff'
-# clinical_trans.to_csv('D:\\MCGDYY\\ont_project\\prognosis\\union_os_rfs_detailed.csv')
+
+	# annotate novel transcripts
+	trans = clinical_trans.loc[i, 'transcript'][:-6]
+	gene = gene_list.loc[trans, 1]
+	clinical_trans.loc[i, 'gene'] = gene
+
+	# extract sequence for clinically relevant novel transcripts
+	with open('D:\\MCGDYY\\ont_project\\new\\novel_uniq_RI_real_seq_200bp.fa', 'r') as seq_table:
+		line = seq_table.readline()
+		while line:
+			if line.startswith('>'):
+				name = line.split('_')[0][1:]
+				if trans == name:
+					extracted_seq += line
+					line = seq_table.readline()
+					extracted_seq += line
+			line = seq_table.readline()
+seq_table.close()
+with open('D:\\MCGDYY\\ont_project\\new\\clinical_novel_trans_real_seq.fa', 'w') as w:
+	w.write(extracted_seq)
+clinical_trans.to_csv('D:\\MCGDYY\\ont_project\\prognosis\\union_os_rfs_detailed.csv', index = False)
 
 # create tables for boxplots
 def boxplot_table(para):	# para is either os or rfs
