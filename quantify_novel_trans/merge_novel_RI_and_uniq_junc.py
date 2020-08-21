@@ -1,6 +1,8 @@
 import pandas as pd
 import statistics
 import math
+from scipy import stats
+from statsmodels.stats.multitest import multipletests
 
 surv_info = pd.read_csv('D:\\MCGDYY\\ont_project\\prognosis\\clinical_info.csv', index_col = 0)
 final = surv_info
@@ -35,7 +37,6 @@ for col in RI.columns:
 			final = pd.concat((final, RI[trans + '_N'], RI[trans + '_T'], RI[trans + '_value'], RI[trans + '_status']), 
 				axis = 1, join = 'inner')
 
-
 ########################################## PART 2: novel transcripts with unique junctions
 
 junc = pd.read_csv('D:\\MCGDYY\\ont_project\\quantification\\sum_norm_novel_mul_trans_uniq_junc.csv', index_col = 0)
@@ -66,5 +67,4 @@ for col in junc.columns:
 				axis = 1, join = 'inner')
 
 
-final.to_csv('D:/MCGDYY/ont_project/quantification/t_exp_median.csv')
-
+#final.to_csv('D:/MCGDYY/ont_project/quantification/t_exp_median.csv')

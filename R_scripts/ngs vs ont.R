@@ -1,9 +1,5 @@
 library(stringr)
 library(ggplot2)
-library(clusterProfiler) # for GO analysis
-library(org.Hs.eg.db) # human gene annotation db
-library(pathview) # view individual pathway
-
 
 ############################################### gene
 
@@ -11,14 +7,14 @@ library(pathview) # view individual pathway
 ONT_gene <- read.csv(file = 'D:\\MCGDYY\\ont_project\\ont_vs_ngs\\ont_gene_counts.txt', 
                      sep = '\t', header = TRUE, skip = 1, stringsAsFactors = FALSE)
 ONT_gene <- ONT_gene[,-(2:6)]
-colnames(ONT_gene)[2:length(ONT_gene)] <- str_split_fixed(colnames(ONT_gene)[2:length(ONT_gene)], "\\.", n = Inf )[,8]
+colnames(ONT_gene)[2:length(ONT_gene)] <- str_match(colnames(ONT_gene)[2:length(ONT_gene)], 'mapping\\.(.*?)_prim')[,2]
 
 # load NGS gene quantification by RSEM
-NGS_gene_N <- read.csv(file = 'D:\\MCGDYY\\ont_project\\ont_vs_ngs\\N12_N.genes.results', 
+NGS_gene_N <- read.csv(file = 'D:\\MCGDYY\\ont_project\\ont_vs_ngs\\N23_N.genes.results', 
                        sep = '\t', header = TRUE, stringsAsFactors = FALSE )
-NGS_gene_T <- read.csv(file = 'D:\\MCGDYY\\ont_project\\ont_vs_ngs\\N12_T.genes.results', 
+NGS_gene_T <- read.csv(file = 'D:\\MCGDYY\\ont_project\\ont_vs_ngs\\N23_T.genes.results', 
                        sep = '\t', header = TRUE, stringsAsFactors = FALSE )
-NGS_gene_M <- read.csv(file = 'D:\\MCGDYY\\ont_project\\ont_vs_ngs\\N12_M.genes.results', 
+NGS_gene_M <- read.csv(file = 'D:\\MCGDYY\\ont_project\\ont_vs_ngs\\N23_M.genes.results', 
                        sep = '\t', header = TRUE, stringsAsFactors = FALSE )
 NGS_gene <- data.frame(cbind(NGS_gene_N$gene_id, NGS_gene_N$FPKM, NGS_gene_T$FPKM, NGS_gene_M$FPKM),
                        stringsAsFactors = FALSE)
@@ -39,8 +35,8 @@ ggplot(mapping = aes(log(master_gene$NGS_N +1 ), log(master_gene$N12_N_prim + 1)
                                  size = 15)) +
   theme_classic()
 
-cor.test(log(master_gene$NGS_N +1 ), log(master_gene$N12_N_prim + 1), method = 'pearson')
-cor.test(master_gene$NGS_N, master_gene$N12_N_prim, method = 'spearman')
+cor.test(log(master_gene$NGS_N + 1), log(master_gene$N12_N + 1), method = 'pearson')
+cor.test(master_gene$NGS_T, master_gene$N12_T, method = 'spearman')
 
 
 

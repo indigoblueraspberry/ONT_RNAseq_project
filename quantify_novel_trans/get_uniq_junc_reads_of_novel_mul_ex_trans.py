@@ -1,4 +1,4 @@
-# Used to collect junction reads for novel multiple-exon TSTs that have unique junctions
+# Used to collect junction reads for novel multiple-exon transcripts that have unique junctions
 
 import pandas as pd
 import re

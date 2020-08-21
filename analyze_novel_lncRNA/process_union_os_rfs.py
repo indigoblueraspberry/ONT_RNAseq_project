@@ -26,7 +26,7 @@ for i in clinical_trans.index:
 gene_list = pd.read_csv('D:\\MCGDYY\\ont_project\\lists\\all_novel_list.txt', sep = '\t', header = None, index_col = 0)
 fdr_bh_p = multipletests(clinical_trans['Wilcoxon_p'], method='fdr_bh')[1]
 clinical_trans['BH_FDR_p'] = fdr_bh_p
-seq_table = open('D:\\MCGDYY\\ont_project\\new\\novel_uniq_RI_real_seq_200bp.fa', 'r')
+seq_table = open('D:\\MCGDYY\\ont_project\\lncRNA\\lncRNA_pred\\novel_uniq_RI_real_seq_200bp.fa', 'r')
 extracted_seq = ''
 # define up or down 
 for i in clinical_trans.index:
@@ -47,19 +47,20 @@ for i in clinical_trans.index:
 	gene = gene_list.loc[trans, 1]
 	clinical_trans.loc[i, 'gene'] = gene
 
-	# extract sequence for clinically relevant novel transcripts
-	with open('D:\\MCGDYY\\ont_project\\new\\novel_uniq_RI_real_seq_200bp.fa', 'r') as seq_table:
-		line = seq_table.readline()
-		while line:
-			if line.startswith('>'):
-				name = line.split('_')[0][1:]
-				if trans == name:
-					extracted_seq += line
-					line = seq_table.readline()
-					extracted_seq += line
+	# extract sequence for DE clinically relevant novel transcripts
+	if clinical_trans.loc[i, 'status'] != 'no_diff':
+		with open('D:\\MCGDYY\\ont_project\\lncRNA\\lncRNA_pred\\novel_uniq_RI_real_seq_200bp.fa', 'r') as seq_table:
 			line = seq_table.readline()
+			while line:
+				if line.startswith('>'):
+					name = line.split('_')[0][1:]
+					if trans == name:
+						extracted_seq += line
+						line = seq_table.readline()
+						extracted_seq += line
+				line = seq_table.readline()
 seq_table.close()
-with open('D:\\MCGDYY\\ont_project\\new\\clinical_novel_trans_real_seq.fa', 'w') as w:
+with open('D:\\MCGDYY\\ont_project\\lncRNA\\lncRNA_pred\\DE_clinical_novel_trans_real_seq.fa', 'w') as w:
 	w.write(extracted_seq)
 clinical_trans.to_csv('D:\\MCGDYY\\ont_project\\prognosis\\union_os_rfs_detailed.csv', index = False)
 

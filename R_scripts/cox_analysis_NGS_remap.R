@@ -3,6 +3,8 @@ library(survminer)
 library(stringr)
 library(ggplot2)
 library(ggpubr)
+library(clusterProfiler)
+library(org.Hs.eg.db)
 
 ###################################################################################
 ####################################### analyzing survival ########################
@@ -10,7 +12,7 @@ library(ggpubr)
 
 # categorized based on median expression in tumor
 
-df <- read.csv('D:\\MCGDYY\\ont_project\\quantification\\t_exp_median.csv', 
+df <- read.csv('D:\\MCGDYY\\ont_project\\quantification\\t_exp_median_DEonly.csv', 
                check.names = FALSE, row.names = 1)
 # R can't have special characters and numbers at the beginning of the col names.
 colnames(df)[15:length(colnames(df))] <- paste('trans_', colnames(df)[15:length(colnames(df))] , sep = '')
@@ -107,7 +109,7 @@ union_os_rfs[is.na(union_os_rfs)] <- '*'
 
 # use KM to plot H group vs. L group
 
-fit <- survfit(Surv(OS_time, OS) ~ trans_8a16c5d1_9028_4073_a601_1a40f8d5d134_status, data = df)
+fit <- survfit(Surv(OS_time, OS) ~ trans_e420b9f9_dcca_496c_9035_d0678183caeb_status, data = df)
 ggsurvplot(fit, pval = TRUE)
 
 # plot uni cox log2HR distribution
@@ -138,13 +140,13 @@ p2 <- ggplot(sig_res_os, aes(x = order, y = 1, fill = p.value)) +
       coord_fixed(ratio = 10)
 
 # jump out of R and use python to process union_os_rfs.csv and get FC_info
-fc_info <- read.csv('D:\\MCGDYY\\ont_project\\prognosis\\FC_boxplot_os.csv', header = TRUE)
+fc_info <- read.csv('D:\\MCGDYY\\ont_project\\prognosis\\FC_boxplot_os.txt', header = TRUE, sep = '\t')
 
 # plot log2FC and lable up and down regulations
 
 p3 <- ggplot(data = fc_info, aes(x = order, y = log2FC, group = order, fill = status)) +
   geom_boxplot() +
-  scale_fill_manual(breaks=c("up","no_diff","down"), values=c("blue", "green", 'red')) +
+  scale_fill_manual(breaks=c("up", "down"), values=c("blue", "red")) +
   theme_classic() +
   theme(panel.border = element_rect(fill = NA),
         axis.title.x = element_blank(),
@@ -160,7 +162,7 @@ ggarrange(p1, p2, p3, ncol = 1, nrow = 3)
 
 # use KM to plot H group vs. L group
 
-fit <- survfit(Surv(RFS_time, RFS) ~ trans_8a16c5d1_9028_4073_a601_1a40f8d5d134_status, data = df)
+fit <- survfit(Surv(RFS_time, RFS) ~ trans_e420b9f9_dcca_496c_9035_d0678183caeb_status, data = df)
 ggsurvplot(fit, pval = TRUE)
 
 # plot uni cox log2HR distribution
@@ -191,13 +193,13 @@ p5 <- ggplot(sig_res_rfs, aes(x = order, y = 1, fill = p.value)) +
   coord_fixed(ratio = 10)
 
 # jump out of R and use python to process union_os_rfs.csv and get FC_info
-fc_info <- read.csv('D:\\MCGDYY\\ont_project\\prognosis\\FC_boxplot_rfs.csv', header = TRUE)
+fc_info <- read.csv('D:\\MCGDYY\\ont_project\\prognosis\\FC_boxplot_rfs.txt', header = TRUE)
 
 # plot log2FC and lable up and down regulations
 
 p6 <- ggplot(data = fc_info, aes(x = order, y = log2FC, group = order, fill = status)) +
   geom_boxplot() +
-  scale_fill_manual(breaks=c("up","no_diff","down"), values=c("blue", "green", 'red')) +
+  scale_fill_manual(breaks=c("up", "down"), values=c("blue", "red")) +
   theme_classic() +
   theme(panel.border = element_rect(fill = NA),
         axis.title.x = element_blank(),
@@ -206,3 +208,40 @@ p6 <- ggplot(data = fc_info, aes(x = order, y = log2FC, group = order, fill = st
         legend.position = 'right')
 
 ggarrange(p4, p5, p6, ncol = 1, nrow = 3)
+
+#################################################################################
+############## DE of novel trans (os and rfs) and enrichment analysis ###########
+#################################################################################
+
+DE_table <- read.csv('D:\\MCGDYY\\ont_project\\prognosis\\union_os_rfs_detailed.csv')
+
+# volcano plot
+threshold <- as.factor(ifelse(DE_table$BH_FDR_p < 0.05 & abs(DE_table$mean_log2FC) >= 0.58,
+                              ifelse(DE_table$mean_log2FC >= 0.58 ,'up','down'),'no_diff'))
+ggplot(DE_table, aes(x = mean_log2FC, y = -log10(BH_FDR_p), color = threshold)) +
+  geom_point() +
+  geom_vline(xintercept = c(-0.58, 0.58),
+             linetype = 'dotted') +
+  geom_hline(yintercept = 1.3,
+             linetype = 'dotted') +
+  theme_bw() +
+  theme(legend.title=element_blank(),
+        axis.text = element_text(color = 'black'),
+        panel.grid = element_blank()) +
+  xlim(-5, 5) +
+  xlab('log2FC') +
+  ylab('-log10(adj. p-value)') +
+  scale_color_manual(values = c("blue", "green", "red"))
+
+# enrichment analysis
+diff_genes <- subset(DE_table, !grepl('no_diff', DE_table$status))
+diff_genes <- diff_genes$gene
+
+ensembl <- gsub("\\..*", "", diff_genes)
+entrez <- bitr(ensembl, fromType = 'ENSEMBL', toType = 'ENTREZID', OrgDb = 'org.Hs.eg.db')
+
+go <- enrichGO(gene = ensembl, OrgDb = org.Hs.eg.db, keyType = 'ENSEMBL', ont = 'ALL')
+barplot(go, showCategory = 5)
+
+kegg <- enrichKEGG(entrez$ENTREZID, organism = 'hsa', keyType = 'kegg')
+dotplot(kegg, showCategory = 5)
