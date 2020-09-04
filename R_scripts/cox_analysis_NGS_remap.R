@@ -6,6 +6,31 @@ library(ggpubr)
 library(clusterProfiler)
 library(org.Hs.eg.db)
 
+#################################################################################
+############## volcano plot for all novel transcripts ###########################
+#################################################################################
+
+DE_table <- read.csv('D:\\MCGDYY\\ont_project\\quantification\\sum_DE_all_novel.csv')
+
+# volcano plot
+threshold <- as.factor(ifelse(DE_table$adj_p < 0.05 & abs(DE_table$log2FC) >= 0.58,
+                              ifelse(DE_table$log2FC >= 0.58 ,'up','down'),'no_diff'))
+ggplot(DE_table, aes(x = log2FC, y = -log10(adj_p), color = threshold)) +
+  geom_point() +
+  geom_vline(xintercept = c(-0.58, 0.58),
+             linetype = 'dotted') +
+  geom_hline(yintercept = 1.3,
+             linetype = 'dotted') +
+  theme_bw() +
+  theme(legend.title=element_blank(),
+        axis.text = element_text(color = 'black'),
+        panel.grid = element_blank()) +
+  xlim(-5, 5) +
+  xlab('log2FC') +
+  ylab('-log10(adj. p-value)') +
+  scale_color_manual(values = c("blue", "green", "red"))
+
+
 ###################################################################################
 ####################################### analyzing survival ########################
 ###################################################################################
@@ -193,7 +218,7 @@ p5 <- ggplot(sig_res_rfs, aes(x = order, y = 1, fill = p.value)) +
   coord_fixed(ratio = 10)
 
 # jump out of R and use python to process union_os_rfs.csv and get FC_info
-fc_info <- read.csv('D:\\MCGDYY\\ont_project\\prognosis\\FC_boxplot_rfs.txt', header = TRUE)
+fc_info <- read.csv('D:\\MCGDYY\\ont_project\\prognosis\\FC_boxplot_rfs.txt', header = TRUE, sep = '\t')
 
 # plot log2FC and lable up and down regulations
 
@@ -209,38 +234,19 @@ p6 <- ggplot(data = fc_info, aes(x = order, y = log2FC, group = order, fill = st
 
 ggarrange(p4, p5, p6, ncol = 1, nrow = 3)
 
-#################################################################################
-############## DE of novel trans (os and rfs) and enrichment analysis ###########
-#################################################################################
+####################################################################################
+## enrichment analysis of DE and clinically relevant novel transcripts #############
+####################################################################################
 
-DE_table <- read.csv('D:\\MCGDYY\\ont_project\\prognosis\\union_os_rfs_detailed.csv')
-
-# volcano plot
-threshold <- as.factor(ifelse(DE_table$BH_FDR_p < 0.05 & abs(DE_table$mean_log2FC) >= 0.58,
-                              ifelse(DE_table$mean_log2FC >= 0.58 ,'up','down'),'no_diff'))
-ggplot(DE_table, aes(x = mean_log2FC, y = -log10(BH_FDR_p), color = threshold)) +
-  geom_point() +
-  geom_vline(xintercept = c(-0.58, 0.58),
-             linetype = 'dotted') +
-  geom_hline(yintercept = 1.3,
-             linetype = 'dotted') +
-  theme_bw() +
-  theme(legend.title=element_blank(),
-        axis.text = element_text(color = 'black'),
-        panel.grid = element_blank()) +
-  xlim(-5, 5) +
-  xlab('log2FC') +
-  ylab('-log10(adj. p-value)') +
-  scale_color_manual(values = c("blue", "green", "red"))
+parent_genes <- read.csv('D:\\MCGDYY\\ont_project\\prognosis\\DE_prog_parent_genes.txt',
+                         sep = '\t', header = FALSE)
 
 # enrichment analysis
-diff_genes <- subset(DE_table, !grepl('no_diff', DE_table$status))
-diff_genes <- diff_genes$gene
 
-ensembl <- gsub("\\..*", "", diff_genes)
+ensembl <- gsub("\\..*", "", parent_genes$V2)
 entrez <- bitr(ensembl, fromType = 'ENSEMBL', toType = 'ENTREZID', OrgDb = 'org.Hs.eg.db')
 
-go <- enrichGO(gene = ensembl, OrgDb = org.Hs.eg.db, keyType = 'ENSEMBL', ont = 'ALL')
+go <- enrichGO(gene = ensembl, OrgDb = org.Hs.eg.db, keyType = 'ENSEMBL', ont = 'BP')
 barplot(go, showCategory = 5)
 
 kegg <- enrichKEGG(entrez$ENTREZID, organism = 'hsa', keyType = 'kegg')

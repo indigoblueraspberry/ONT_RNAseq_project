@@ -84,7 +84,7 @@ process_res('D:\\MCGDYY\\ont_project\\flair_out\\flair.diffsplice.ir.events.quan
 
 """
 
-"""
+
 
 # PART 3
 
@@ -146,8 +146,9 @@ ax.spines['right'].set_visible(False)
 ax.spines['top'].set_visible(False)
 plt.show(ax)
 
-"""
 
+
+"""
 # PART 4
 
 ############################################################################################
@@ -158,6 +159,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 import re
+from scipy import stats
 
 sum_table = pd.DataFrame(columns = ['exon_number'])
 with open('D:\\MCGDYY\\ont_project\\flair_out\\flair.collapse.isoforms.stringent.gtf', 'r') as df:
@@ -173,6 +175,7 @@ with open('D:\\MCGDYY\\ont_project\\flair_out\\flair.collapse.isoforms.stringent
 sum_table['name'] = sum_table.index
 anno = sum_table[sum_table['name'].str.contains('ENST')]
 novel = sum_table[-sum_table['name'].str.contains('ENST')]
+ttest_p = stats.ttest_ind(anno['exon_number'], novel['exon_number'])[1]	# p-value is way less than 0.001
 
 plot = sns.kdeplot(anno['exon_number'], shade = True, color = "b")
 plot = sns.kdeplot(novel['exon_number'], shade = True, color = "r")
@@ -181,4 +184,7 @@ plt.xlabel('Exon number')
 plt.ylabel('Density')
 plot.spines['right'].set_visible(False)
 plot.spines['top'].set_visible(False)
+plt.text(0.65, 0.7, 'p-value < 0.001',  transform=plot.transAxes)
 plt.show(plot)
+
+"""

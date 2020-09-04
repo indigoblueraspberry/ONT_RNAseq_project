@@ -52,3 +52,14 @@ for i in DE_prog_novel_trans_list:
 
 with open('D:\\MCGDYY\\ont_project\\lncRNA\\lncRNA_pred\\DE_clinical_novel_trans_real_seq.fa', 'w') as w:
 	w.write(extracted_seq)
+
+
+# find the parent gene names for the DE and clinically relevant novel transcripts
+
+all_novel_list = pd.read_csv('D:\\MCGDYY\\ont_project\\lists\\all_novel_list.txt', index_col = 0, sep = '\t', header = None)
+DE_prog_parent_genes = ''
+for i in DE_prog_novel_trans_list:
+	parent_gene = all_novel_list.loc[i, 1]
+	DE_prog_parent_genes += i + '\t' + parent_gene + '\n'
+with open('D:\\MCGDYY\\ont_project\\prognosis\\DE_prog_parent_genes.txt', 'w') as w:
+	w.write(DE_prog_parent_genes)

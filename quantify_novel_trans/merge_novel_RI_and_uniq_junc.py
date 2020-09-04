@@ -1,8 +1,8 @@
 import pandas as pd
+import numpy as np
 import statistics
 import math
-from scipy import stats
-from statsmodels.stats.multitest import multipletests
+
 
 surv_info = pd.read_csv('D:\\MCGDYY\\ont_project\\prognosis\\clinical_info.csv', index_col = 0)
 final = surv_info
