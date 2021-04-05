@@ -3,9 +3,9 @@
 
 import pandas as pd
 
-CNCI_df = pd.read_csv('D:\\MCGDYY\\ont_project\\lncRNA\\lncRNA_pred\\CNCI_out.txt', sep = '\t')
-CPC2_df = pd.read_csv('D:\\MCGDYY\\ont_project\\lncRNA\\lncRNA_pred\\CPC2_out.txt', sep = '\t')
-PLEK_df = pd.read_csv('D:\\MCGDYY\\ont_project\\lncRNA\\lncRNA_pred\\PLEK_out.txt', sep = '\t', header = None)
+CNCI_df = pd.read_csv('D:\\MCGDYY\\ont_project\\NovelQuant_pipeline\\lncRNA\\CNCI_out.txt', sep = '\t')
+CPC2_df = pd.read_csv('D:\\MCGDYY\\ont_project\\NovelQuant_pipeline\\lncRNA\\CPC2_out.txt', sep = '\t')
+PLEK_df = pd.read_csv('D:\\MCGDYY\\ont_project\\NovelQuant_pipeline\\lncRNA\\PLEK_out.txt', sep = '\t', header = None)
 sum_table = pd.DataFrame(columns = ['CNCI', 'CPC2', 'PLEK'])
 
 for i in CNCI_df.index:
@@ -59,6 +59,19 @@ def sum_data(feature):	# feature is either coding or noncoding
 	# CNCI & CPC2 & PLEK
 	final = sum_table[(sum_table['CPC2'] == feature) & (sum_table['PLEK'] == feature) & (sum_table['CNCI'] == feature)]
 	print(feature + ' intersection among three: ' + str(len(final)))
-	# final.to_csv('D:\\MCGDYY\\ont_project\\lncRNA\\lncRNA_pred\\intersec_novel_lncRNA.csv')
+
+	# CPC2 all
+	count7 = len(sum_table[sum_table['CPC2'] == feature])
+	print(feature + ' CPC2: ' + str(count7))
+
+	# CPC2 all
+	count8 = len(sum_table[sum_table['CNCI'] == feature])
+	print(feature + ' CNCI: ' + str(count8))
+
+	# CPC2 all
+	count9 = len(sum_table[sum_table['PLEK'] == feature])
+	print(feature + ' PLEK: ' + str(count9))
+
+	# final.to_csv('D:\\MCGDYY\\ont_project\\NovelQuant_pipeline\\lncRNA\\intersec_novel_lncRNA.csv')
 
 sum_data('noncoding')

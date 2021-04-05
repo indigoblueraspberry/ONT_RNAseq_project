@@ -6,6 +6,7 @@ all_exons =  pd.read_csv('D:\\MCGDYY\\ont_project\\gtf_files\\sub.gtf',
 	sep = '\t', chunksize = 10000, header= None, comment = '#',
 	names = ['chromosome', 'source', 'type', 'start', 'end', 'none1', 'strand', 'none2', 'info'])
 all_exons = pd.concat(all_exons, ignore_index = True)
+all_exons = all_exons[all_exons['type'] == 'exon']
 
 # append a column of gene names
 gene_names = []

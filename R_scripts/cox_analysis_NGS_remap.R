@@ -10,12 +10,12 @@ library(org.Hs.eg.db)
 ############## volcano plot for all novel transcripts ###########################
 #################################################################################
 
-DE_table <- read.csv('D:\\MCGDYY\\ont_project\\quantification\\sum_DE_all_novel.csv')
+DE_table <- read.csv('D:\\MCGDYY\\ont_project\\NovelQuant_pipeline\\sum_DE_all_novel.csv')
 
 # volcano plot
 threshold <- as.factor(ifelse(DE_table$adj_p < 0.05 & abs(DE_table$log2FC) >= 0.58,
                               ifelse(DE_table$log2FC >= 0.58 ,'up','down'),'no_diff'))
-ggplot(DE_table, aes(x = log2FC, y = -log10(adj_p), color = threshold)) +
+vol <- ggplot(DE_table, aes(x = log2FC, y = -log10(adj_p), color = threshold)) +
   geom_point() +
   geom_vline(xintercept = c(-0.58, 0.58),
              linetype = 'dotted') +
@@ -23,7 +23,12 @@ ggplot(DE_table, aes(x = log2FC, y = -log10(adj_p), color = threshold)) +
              linetype = 'dotted') +
   theme_bw() +
   theme(legend.title=element_blank(),
-        axis.text = element_text(color = 'black'),
+        legend.position = c(0.9,0.35),
+        legend.box.background = element_rect(colour = 'black'),
+        legend.background = element_blank(),
+        legend.text = element_text(size = 10),
+        axis.text = element_text(color = 'black', size = 15),
+        axis.title = element_text(size = 20),
         panel.grid = element_blank()) +
   xlim(-5, 5) +
   xlab('log2FC') +
@@ -37,7 +42,7 @@ ggplot(DE_table, aes(x = log2FC, y = -log10(adj_p), color = threshold)) +
 
 # categorized based on median expression in tumor
 
-df <- read.csv('D:\\MCGDYY\\ont_project\\quantification\\t_exp_median_DEonly.csv', 
+df <- read.csv('D:\\MCGDYY\\ont_project\\NovelQuant_pipeline\\t_exp_median_DEonly.csv', 
                check.names = FALSE, row.names = 1)
 # R can't have special characters and numbers at the beginning of the col names.
 colnames(df)[15:length(colnames(df))] <- paste('trans_', colnames(df)[15:length(colnames(df))] , sep = '')
@@ -79,7 +84,8 @@ sig_res <- mutate(sig_res, transcript = row.names(sig_res))
 sig_res <- mutate(sig_res, log2HR = log2(HR))
 sig_res <- sig_res[order(sig_res$log2HR, decreasing = TRUE),]
 sig_res_os <- mutate(sig_res, order = 1:nrow(sig_res))
-#write.csv(sig_res_os, 'D:\\MCGDYY\\ont_project\\prognosis\\sig_res_os.csv', row.names = FALSE)
+#write.csv(sig_res_os, 'D:\\MCGDYY\\ont_project\\NovelQuant_pipeline\\prognosis\\sig_res_os.csv', row.names = FALSE)
+
 
 ###################################################################################
 ####################################### analyzing recurrence ######################
@@ -121,12 +127,12 @@ sig_res <- mutate(sig_res, transcript = row.names(sig_res))
 sig_res <- mutate(sig_res, log2HR = log2(HR))
 sig_res <- sig_res[order(sig_res$log2HR, decreasing = TRUE),]
 sig_res_rfs <- mutate(sig_res, order = 1:nrow(sig_res))
-#write.csv(sig_res_rfs, 'D:\\MCGDYY\\ont_project\\prognosis\\sig_res_rfs.csv', row.names = FALSE)
+#write.csv(sig_res_rfs, 'D:\\MCGDYY\\ont_project\\NovelQuant_pipeline\\prognosis\\sig_res_rfs.csv', row.names = FALSE)
 
 # output the union of os and rfs
 union_os_rfs <- merge(sig_res_os, sig_res_rfs, by = 'transcript', all = TRUE, suffixes = c('_os', '_rfs'))
 union_os_rfs[is.na(union_os_rfs)] <- '*'
-#write.csv(union_os_rfs, 'D:\\MCGDYY\\ont_project\\prognosis\\union_os_rfs.csv', row.names = FALSE)
+#write.csv(union_os_rfs, 'D:\\MCGDYY\\ont_project\\NovelQuant_pipeline\\prognosis\\union_os_rfs.csv', row.names = FALSE)
 
 ##################################################
 ######################### plotting os ############
@@ -134,52 +140,78 @@ union_os_rfs[is.na(union_os_rfs)] <- '*'
 
 # use KM to plot H group vs. L group
 
-fit <- survfit(Surv(OS_time, OS) ~ trans_e420b9f9_dcca_496c_9035_d0678183caeb_status, data = df)
-ggsurvplot(fit, pval = TRUE)
+# CDO1
+fit <- survfit(Surv(RFS_time, RFS) ~ trans_b5082e5d_a8e4_4986_841d_9f416d0d57fe_status, data = df)
+ggsurvplot(fit, pval = TRUE, xlab = 'Days', ylab = 'Recurrence Free Survival (%)',
+           legend.labs = c('CDO1-novel low', 'CDO1-novel high'),
+           legend.title = '',  palette  = c('blue', 'red'), legend = c(0.7, 0.9),
+           font.x = 30, font.y = 30, font.legend = 25, font.tickslab = 25)
+
+# CYP2A6
+fit <- survfit(Surv(RFS_time, RFS) ~ trans_9c1c526a_89d8_4fed_afb7_8a1eb93189a3_status, data = df)
+ggsurvplot(fit, pval = TRUE, xlab = 'Days', ylab = 'Recurrence Free Survival (%)',
+           legend.labs = c('CYP2A6-novel low', 'CYP2A6-novel high'),
+           legend.title = '',  palette  = c('blue', 'red'), legend = c(0.7, 0.9),
+           font.x = 30, font.y = 30, font.legend = 25, font.tickslab = 25)
+
+fit <- survfit(Surv(OS_time, OS) ~ trans_9c1c526a_89d8_4fed_afb7_8a1eb93189a3_status, data = df)
+ggsurvplot(fit, pval = TRUE, xlab = 'Days', ylab = 'Overall Survival (%)',
+           legend.labs = c('CYP2A6-novel low', 'CYP2A6-novel high'),
+           legend.title = '',  palette  = c('blue', 'red'), legend = c(0.7, 0.2),
+           font.x = 30, font.y = 30, font.legend = 25, font.tickslab = 25)
 
 # plot uni cox log2HR distribution
 
+# sig_res_os <- read.csv('D:\\MCGDYY\\ont_project\\NovelQuant_pipeline\\prognosis\\sig_res_os.csv')
+# novel_gene <- read.csv('D:\\MCGDYY\\ont_project\\lists\\all_novel_list.txt', sep = '\t', header = FALSE)
+# gene_symbol <- read.csv('D:\\MCGDYY\\ont_project\\lists\\all_trans_to_gene_list.txt', sep = '\t', header = FALSE)
+# gene_symbol <- unique(gene_symbol[c('V1', 'V3')])
+# sig_res_os <- left_join(sig_res_os, novel_gene, by = c('transcript' = 'V1'))
+# sig_res_os <- left_join(sig_res_os, gene_symbol, by = c('V2' = 'V1'))
+
 p1 <- ggplot(data = sig_res_os, aes(x = order, y = log2HR)) +
-      geom_point(shape = 19) +
-      theme_classic() +
-      theme(panel.border = element_rect(fill = NA),
-            axis.title.x = element_blank(),
-            axis.text.x = element_blank(),
-            axis.ticks.x = element_blank())
+  geom_point(size = 1) +
+  theme_classic() +
+  theme(panel.border = element_rect(fill = NA),
+        axis.title.x = element_blank(),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank()) +
+  xlim(0, dim(sig_res_os)[1] + 1)
 
-# plot p-value of uni cox
-
-p2 <- ggplot(sig_res_os, aes(x = order, y = 1, fill = p.value)) +
-      geom_tile() +
-      scale_fill_gradientn(colours = c("red", "white")) +
-      theme(panel.grid = element_blank(),
-            panel.background = element_blank(),
-            axis.text = element_blank(),
-            axis.ticks = element_blank(),
-            panel.border = element_rect(fill = NA),
-            legend.direction = 'horizontal',
-            legend.position = 'bottom',
-            legend.title = element_blank()) +
-      xlab('') +
-      ylab('p-value') +
-      coord_fixed(ratio = 10)
+# # plot p-value of uni cox
+# 
+# p2 <- ggplot(sig_res_os, aes(x = order, y = 1, fill = p.value)) +
+#       geom_tile() +
+#       scale_fill_gradientn(colours = c("red", "white")) +
+#       theme(panel.grid = element_blank(),
+#             panel.background = element_blank(),
+#             axis.text = element_blank(),
+#             axis.ticks = element_blank(),
+#             panel.border = element_rect(fill = NA),
+#             legend.direction = 'horizontal',
+#             legend.position = 'none',
+#             legend.title = element_blank()) +
+#       xlab('') +
+#       ylab('p-value') +
+#       xlim(0, dim(sig_res_os)[1] + 1)
 
 # jump out of R and use python to process union_os_rfs.csv and get FC_info
-fc_info <- read.csv('D:\\MCGDYY\\ont_project\\prognosis\\FC_boxplot_os.txt', header = TRUE, sep = '\t')
+fc_info <- read.csv('D:\\MCGDYY\\ont_project\\NovelQuant_pipeline\\prognosis\\FC_boxplot_os.txt', header = TRUE, sep = '\t')
 
 # plot log2FC and lable up and down regulations
 
 p3 <- ggplot(data = fc_info, aes(x = order, y = log2FC, group = order, fill = status)) +
-  geom_boxplot() +
+  geom_boxplot(size = 0.1, outlier.size = 0.1) +
   scale_fill_manual(breaks=c("up", "down"), values=c("blue", "red")) +
   theme_classic() +
   theme(panel.border = element_rect(fill = NA),
         axis.title.x = element_blank(),
         axis.text.x = element_blank(),
         axis.ticks.x = element_blank(),
-        legend.position = 'right')
+        legend.position = 'none') +
+  xlim(0, dim(sig_res_os)[1] + 1)
 
-ggarrange(p1, p2, p3, ncol = 1, nrow = 3)
+ggarrange(p1, p3, ncol = 1, nrow = 2, heights = c(1, 1), align = 'v')
 
 ##################################################
 ######################### plotting rfs ###########
@@ -193,57 +225,61 @@ ggsurvplot(fit, pval = TRUE)
 # plot uni cox log2HR distribution
 
 p4 <- ggplot(data = sig_res_rfs, aes(x = order, y = log2HR)) +
-  geom_point(shape = 19) +
+  geom_point(size = 1) +
   theme_classic() +
   theme(panel.border = element_rect(fill = NA),
         axis.title.x = element_blank(),
         axis.text.x = element_blank(),
-        axis.ticks.x = element_blank())
+        axis.ticks.x = element_blank()) +
+  xlim(0, dim(sig_res_rfs)[1] + 1)
 
 # plot p-value of uni cox
 
-p5 <- ggplot(sig_res_rfs, aes(x = order, y = 1, fill = p.value)) +
-  geom_tile() +
-  scale_fill_gradientn(colours = c("red", "white")) +
-  theme(panel.grid = element_blank(),
-        panel.background = element_blank(),
-        axis.text = element_blank(),
-        axis.ticks = element_blank(),
-        panel.border = element_rect(fill = NA),
-        legend.direction = 'horizontal',
-        legend.position = 'bottom',
-        legend.title = element_blank()) +
-  xlab('') +
-  ylab('p-value') +
-  coord_fixed(ratio = 10)
+# p5 <- ggplot(sig_res_rfs, aes(x = order, y = 1, fill = p.value)) +
+#   geom_tile() +
+#   scale_fill_gradientn(colours = c("red", "white")) +
+#   theme(panel.grid = element_blank(),
+#         panel.background = element_blank(),
+#         axis.text = element_blank(),
+#         axis.ticks = element_blank(),
+#         axis.title.x = element_blank(),
+#         panel.border = element_rect(fill = NA),
+#         legend.direction = 'horizontal',
+#         legend.position = 'none',
+#         legend.title = element_blank()) +
+#   ylab('p-value') +
+#   xlim(0, dim(sig_res_rfs)[1] + 1)
 
 # jump out of R and use python to process union_os_rfs.csv and get FC_info
-fc_info <- read.csv('D:\\MCGDYY\\ont_project\\prognosis\\FC_boxplot_rfs.txt', header = TRUE, sep = '\t')
+fc_info <- read.csv('D:\\MCGDYY\\ont_project\\NovelQuant_pipeline\\prognosis\\FC_boxplot_rfs.txt', header = TRUE, sep = '\t')
 
 # plot log2FC and lable up and down regulations
 
 p6 <- ggplot(data = fc_info, aes(x = order, y = log2FC, group = order, fill = status)) +
-  geom_boxplot() +
+  geom_boxplot(size = 0.1, outlier.size = 0.1) +
   scale_fill_manual(breaks=c("up", "down"), values=c("blue", "red")) +
   theme_classic() +
   theme(panel.border = element_rect(fill = NA),
         axis.title.x = element_blank(),
         axis.text.x = element_blank(),
         axis.ticks.x = element_blank(),
-        legend.position = 'right')
+        legend.position = 'none') +
+  xlim(0, dim(sig_res_rfs)[1] + 1)
 
-ggarrange(p4, p5, p6, ncol = 1, nrow = 3)
+ggarrange(p4, p6, ncol = 1, nrow = 2, heights = c(1,1), align = 'v')
+
+ggarrange(vol, 
+          ggarrange(p4, p6, p1, p3, ncol = 1, nrow = 4, heights = c(1,1,1,1), align = 'v'), ncol = 2, widths = c(1, 2))
 
 ####################################################################################
-## enrichment analysis of DE and clinically relevant novel transcripts #############
+## enrichment analysis of novel prognostic mRNAs               #####################
 ####################################################################################
 
-parent_genes <- read.csv('D:\\MCGDYY\\ont_project\\prognosis\\DE_prog_parent_genes.txt',
-                         sep = '\t', header = FALSE)
+parent_genes <- read.csv('D:\\MCGDYY\\ont_project\\NovelQuant_pipeline\\lncRNA\\intersec_novel_mRNA.csv',header = TRUE)
 
 # enrichment analysis
 
-ensembl <- gsub("\\..*", "", parent_genes$V2)
+ensembl <- gsub("\\..*", "", parent_genes$Gene)
 entrez <- bitr(ensembl, fromType = 'ENSEMBL', toType = 'ENTREZID', OrgDb = 'org.Hs.eg.db')
 
 go <- enrichGO(gene = ensembl, OrgDb = org.Hs.eg.db, keyType = 'ENSEMBL', ont = 'BP')

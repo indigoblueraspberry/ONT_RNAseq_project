@@ -37,13 +37,14 @@ t_test_p = stats.ttest_ind(anno['length'], novel['length'])[1]	# p-value is wayy
 
 plot = sns.kdeplot(anno['length'], shade = True, color = "b")
 plot = sns.kdeplot(novel['length'], shade = True, color = "r")
-plt.legend(labels = ['annotated transcripts', 'novel transcripts'])
-plt.xlabel('Transcript length (bp)')
-plt.ylabel('Density')
-plt.ticklabel_format(axis = 'y', style = 'sci', scilimits = (0,0))
+plt.legend(labels = ['annotated transcripts', 'novel transcripts'], fontsize = 20)
+plt.xlabel('Transcript length (bp)', fontsize = 30)
+plt.ylabel('Density', fontsize = 30)
+plt.xticks(fontsize = 20)
+plt.yticks(fontsize = 20)
 plot.spines['right'].set_visible(False)
 plot.spines['top'].set_visible(False)
-plt.text(0.65, 0.7, 'p-value < 0.001',  transform=plot.transAxes)
+plt.text(0.5, 0.5, 'P < 0.001',  transform=plot.transAxes, fontsize = 20)
 plt.show(plot)
 
 """
@@ -84,7 +85,7 @@ process_res('D:\\MCGDYY\\ont_project\\flair_out\\flair.diffsplice.ir.events.quan
 
 """
 
-
+"""
 
 # PART 3
 
@@ -146,7 +147,7 @@ ax.spines['right'].set_visible(False)
 ax.spines['top'].set_visible(False)
 plt.show(ax)
 
-
+"""
 
 """
 # PART 4
@@ -179,12 +180,233 @@ ttest_p = stats.ttest_ind(anno['exon_number'], novel['exon_number'])[1]	# p-valu
 
 plot = sns.kdeplot(anno['exon_number'], shade = True, color = "b")
 plot = sns.kdeplot(novel['exon_number'], shade = True, color = "r")
-plt.legend(labels = ['annotated transcripts', 'novel transcripts'])
-plt.xlabel('Exon number')
-plt.ylabel('Density')
+plt.legend(labels = ['annotated transcripts', 'novel transcripts'], fontsize = 20)
+plt.xlabel('Exon number', fontsize = 30)
+plt.ylabel('Density', fontsize = 30)
+plt.xticks(fontsize = 20)
+plt.yticks(fontsize = 20)
 plot.spines['right'].set_visible(False)
 plot.spines['top'].set_visible(False)
-plt.text(0.65, 0.7, 'p-value < 0.001',  transform=plot.transAxes)
+plt.text(0.5, 0.5, 'P < 0.001',  transform=plot.transAxes, fontsize = 20)
 plt.show(plot)
 
 """
+
+"""
+# PART 5
+# Summary of NovelQuant results
+
+import pandas as pd
+import re
+
+RI_df = pd.read_csv('D:\\MCGDYY\\ont_project\\NovelQuant_pipeline\\NovelQuant_res\\retained_introns.gtf', sep = '\t', header = None)
+RI_list = []
+for i in RI_df[8]:
+	trans = re.findall(r"transcript_id \"(.*?)\";", i)[0]
+	if trans not in RI_list:
+		RI_list.append(trans)
+
+print(len(RI_list))
+print(len(RI_df))
+print(len(RI_df[RI_df[5] == 'IR']))
+print(len(RI_df[RI_df[5] == 'CE']))
+print(len(RI_df[RI_df[5] == 'E3E']))
+print(len(RI_df[RI_df[5] == 'E5E']))
+
+UJ_df = pd.read_csv('D:\\MCGDYY\\ont_project\\NovelQuant_pipeline\\NovelQuant_res\\uniq_eej.gtf', sep = '\t', header = 0)
+UJ_list = []
+for i in UJ_df['transcript']:
+	if i not in UJ_list:
+		UJ_list.append(i)
+
+print(len(UJ_list))
+print(len(UJ_df))
+
+intersec = []
+for i in RI_list:
+	if i in UJ_list:
+		intersec.append(i)
+print(len(intersec))
+
+all_trans = []
+for i in RI_list:
+	if i not in all_trans:
+		all_trans.append(i)
+for i in UJ_list:
+	if i not in all_trans:
+		all_trans.append(i)
+print(len(all_trans))
+"""
+
+"""
+# PART 6
+# Summary of SUPPA results
+
+import pandas as pd
+
+sum_table = pd.DataFrame(columns = ['annotated', 'novel'])
+
+# RI
+
+df = pd.read_csv('D:\\MCGDYY\\ont_project\\SUPPA\\novel_AS_RI_strict.ioe', sep = '\t')
+anno_list = []
+novel_list = []
+for i in df.index:
+	info = df.loc[i, 'alternative_transcripts']
+	for k in info.split(','):
+		if 'ENST' in k:
+			if k not in anno_list:
+				anno_list.append(k)
+		else:
+			if k not in novel_list:
+				novel_list.append(k)
+sum_table.loc['RI', 'annotated'] = len(anno_list)
+sum_table.loc['RI', 'novel'] = len(novel_list)
+
+# SE
+
+df = pd.read_csv('D:\\MCGDYY\\ont_project\\SUPPA\\novel_AS_SE_strict.ioe', sep = '\t')
+anno_list = []
+novel_list = []
+for i in df.index:
+	sub_info = df.loc[i, 'alternative_transcripts'].split(',')
+	all_info = df.loc[i, 'total_transcripts'].split(',')
+	for k in all_info:
+		if k not in sub_info:
+			if 'ENST' in k:
+				anno_list.append(k)
+			else:
+				novel_list.append(k)
+sum_table.loc['SE', 'annotated'] = len(anno_list)
+sum_table.loc['SE', 'novel'] = len(novel_list)
+
+# A3
+
+df = pd.read_csv('D:\\MCGDYY\\ont_project\\SUPPA\\novel_AS_A3_strict.ioe', sep = '\t')
+anno_list = []
+novel_list = []
+for i in df.index:
+	all_info = df.loc[i, 'alternative_transcripts'].split(',')
+	for k in all_info:
+		if 'ENST' in k:
+			anno_list.append(k)
+		else:
+			novel_list.append(k)
+sum_table.loc['A3', 'annotated'] = len(anno_list)
+sum_table.loc['A3', 'novel'] = len(novel_list)
+
+# A5
+
+df = pd.read_csv('D:\\MCGDYY\\ont_project\\SUPPA\\novel_AS_A5_strict.ioe', sep = '\t')
+anno_list = []
+novel_list = []
+for i in df.index:
+	all_info = df.loc[i, 'alternative_transcripts'].split(',')
+	for k in all_info:
+		if 'ENST' in k:
+			anno_list.append(k)
+		else:
+			novel_list.append(k)
+sum_table.loc['A5', 'annotated'] = len(anno_list)
+sum_table.loc['A5', 'novel'] = len(novel_list)
+
+# AF
+
+df = pd.read_csv('D:\\MCGDYY\\ont_project\\SUPPA\\novel_AS_AF_strict.ioe', sep = '\t')
+anno_list = []
+novel_list = []
+for i in df.index:
+	all_info = df.loc[i, 'alternative_transcripts'].split(',')
+	for k in all_info:
+		if 'ENST' in k:
+			anno_list.append(k)
+		else:
+			novel_list.append(k)
+sum_table.loc['AF', 'annotated'] = len(anno_list)
+sum_table.loc['AF', 'novel'] = len(novel_list)
+
+# AL
+
+df = pd.read_csv('D:\\MCGDYY\\ont_project\\SUPPA\\novel_AS_AL_strict.ioe', sep = '\t')
+anno_list = []
+novel_list = []
+for i in df.index:
+	all_info = df.loc[i, 'alternative_transcripts'].split(',')
+	for k in all_info:
+		if 'ENST' in k:
+			anno_list.append(k)
+		else:
+			novel_list.append(k)
+sum_table.loc['AL', 'annotated'] = len(anno_list)
+sum_table.loc['AL', 'novel'] = len(novel_list)
+
+# MX
+
+df = pd.read_csv('D:\\MCGDYY\\ont_project\\SUPPA\\novel_AS_MX_strict.ioe', sep = '\t')
+anno_list = []
+novel_list = []
+for i in df.index:
+	all_info = df.loc[i, 'alternative_transcripts'].split(',')
+	for k in all_info:
+		if 'ENST' in k:
+			anno_list.append(k)
+		else:
+			novel_list.append(k)
+sum_table.loc['MX', 'annotated'] = len(anno_list)
+sum_table.loc['MX', 'novel'] = len(novel_list)
+
+sum_table.to_csv('D:\\MCGDYY\\ont_project\\SUPPA\\sum.csv')
+"""
+
+import os
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy import stats
+
+novel_df = pd.read_csv('D:\\MCGDYY\\ont_project\\NovelQuant_pipeline\\NovelQuant_res.csv', index_col = 0)
+master_df = pd.DataFrame(columns = ['CDO1', 'CYP', 'CDO1-novel', 'CYP-novel'])
+for sample in os.listdir('D:\\MCGDYY\\ont_project\\rsem\\'):
+    if 'isoforms' in sample:
+        full_path = 'D:\\MCGDYY\\ont_project\\rsem\\' + sample
+        sample = sample.split('.')[0]
+        each_df = pd.read_csv(full_path, sep = '\t', index_col = 0)
+        CDO1 = each_df.loc['ENST00000250535.5', 'TPM']
+        master_df.loc[sample, 'CDO1'] = CDO1
+        CYP = each_df.loc['ENST00000301141.10', 'TPM']
+        master_df.loc[sample, 'CYP'] = CYP
+        
+        master_df.loc[sample, 'CDO1-novel'] = novel_df.loc['b5082e5d-a8e4-4986-841d-9f416d0d57fe', sample]
+        master_df.loc[sample, 'CYP-novel'] = novel_df.loc['9c1c526a-89d8-4fed-afb7-8a1eb93189a3', sample]
+
+for i in master_df.index:
+    if '-1' in i:
+        master_df.loc[i, 'type'] = 'T'
+    else:
+        master_df.loc[i, 'type'] = 'N'
+
+# groups = master_df.groupby('type')
+# for name, group in groups:
+#     if name == 'N':
+#         col = 'b'
+#     else:
+#         col = 'r'
+#     plot = plt.scatter(np.log2(group['CDO1'].astype(np.float64)), np.log2(group['CDO1-novel'].astype(np.float64)), 
+#             label = name, c = col)
+# plt.legend(labels = ['peritumor', 'tumor'], fontsize = 15)
+# plt.xlabel(r'log2(CDO1 expression in TPM)', fontsize = 15)
+# plt.ylabel(r'log2(CDO1-novel expression)', fontsize = 15)   
+# plt.show(plot)  
+
+groups = master_df.groupby('type')
+for name, group in groups:
+    if name == 'N':
+        col = 'b'
+    else:
+        col = 'r'
+    plot = plt.scatter(np.log2(group['CYP'].astype(np.float64)), np.log2(group['CYP-novel'].astype(np.float64)), 
+            label = name, c = col)
+plt.legend(labels = ['peritumor', 'tumor'], fontsize = 15)
+plt.xlabel(r'log2(CYP2A6 expression in TPM)', fontsize = 15)
+plt.ylabel(r'log2(CYP2A6-novel expression)', fontsize = 15)
+plt.show(plot)

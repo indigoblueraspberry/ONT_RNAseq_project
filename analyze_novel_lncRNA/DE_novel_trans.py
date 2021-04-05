@@ -4,7 +4,7 @@ import pandas as pd
 from scipy import stats
 from statsmodels.stats.multitest import multipletests
 
-exp_df = pd.read_csv('D:\\MCGDYY\\ont_project\\quantification\\t_exp_median.csv')
+exp_df = pd.read_csv('D:\\MCGDYY\\ont_project\\NovelQuant_pipeline\\t_exp_median.csv')
 sum_df = pd.DataFrame(columns = ['log2FC', 'wilcoxon_p', 'adj_p'])
 
 for i in exp_df.columns:
@@ -25,5 +25,5 @@ for i in exp_df.columns[15:]:
 	trans_name = i.split('_')[0]
 	if trans_name not in DE_list:
 		DE_df = DE_df.drop(columns = [i])
-sum_df.to_csv('D:\\MCGDYY\\ont_project\\quantification\\sum_DE_all_novel.csv')
-DE_df.to_csv('D:\\MCGDYY\\ont_project\\quantification\\t_exp_median_DEonly.csv', index = False)
+sum_df.to_csv('D:\\MCGDYY\\ont_project\\NovelQuant_pipeline\\sum_DE_all_novel.csv')
+DE_df.to_csv('D:\\MCGDYY\\ont_project\\NovelQuant_pipeline\\t_exp_median_DEonly.csv', index = False)

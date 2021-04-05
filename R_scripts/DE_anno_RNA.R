@@ -38,7 +38,7 @@ DE_lncRNA <- subset(all_lncRNA, padj < 0.05 & abs(log2FoldChange) > log2(1.5))
 threshold <- as.factor(ifelse(all_mRNA$padj < 0.05 & abs(all_mRNA$log2FoldChange) >= 0.58 ,
                               ifelse(all_mRNA$log2FoldChange >= 0.58 ,'up','down'),'no_diff'))
 ggplot(all_mRNA, aes(x = log2FoldChange, y = -log10(padj), color = threshold)) +
-  geom_point() +
+  geom_point(size = 1) +
   geom_vline(xintercept = c(-0.58, 0.58),
              linetype = 'dotted') +
   geom_hline(yintercept = 1.3,
@@ -46,6 +46,7 @@ ggplot(all_mRNA, aes(x = log2FoldChange, y = -log10(padj), color = threshold)) +
   theme_bw() +
   theme(legend.title=element_blank(),
         axis.text = element_text(color = 'black'),
+        axis.title = element_text(size = 15),
         panel.grid = element_blank()) +
   xlim(-30, 30) +
   xlab('log2FC') +

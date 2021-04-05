@@ -26,7 +26,7 @@ NGS_gene$NGS_M <- as.numeric(NGS_gene$NGS_M)
 # merge ONT and NGS data
 master_gene <- merge(NGS_gene, ONT_gene, by = 'Geneid')
 
-ggplot(mapping = aes(log(master_gene$NGS_N +1 ), log(master_gene$N12_N_prim + 1))) +
+ggplot(mapping = aes(log(master_gene$NGS_N +1 ), log(master_gene$N23_N + 1))) +
   geom_point() +
   xlab('log(TPM+1)') +
   ylab('log(counts+1)') +
@@ -35,8 +35,8 @@ ggplot(mapping = aes(log(master_gene$NGS_N +1 ), log(master_gene$N12_N_prim + 1)
                                  size = 15)) +
   theme_classic()
 
-cor.test(log(master_gene$NGS_N + 1), log(master_gene$N12_N + 1), method = 'pearson')
-cor.test(master_gene$NGS_T, master_gene$N12_T, method = 'spearman')
+cor.test(log(master_gene$NGS_N + 1), log(master_gene$N23_N + 1), method = 'pearson')
+cor.test(master_gene$NGS_M, master_gene$N23_M, method = 'spearman')
 
 
 

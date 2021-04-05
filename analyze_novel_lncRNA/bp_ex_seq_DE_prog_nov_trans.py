@@ -2,12 +2,12 @@ import pandas as pd
 
 # create tables for box plots of log2FC of DE and clinically relevant novel transcripts 
 
-exp_df = pd.read_csv('D:\\MCGDYY\\ont_project\\quantification\\t_exp_median_DEonly.csv')
+exp_df = pd.read_csv('D:\\MCGDYY\\ont_project\\NovelQuant_pipeline\\t_exp_median_DEonly.csv')
 DE_prog_novel_trans_list = []
 
 def create_bp_input(prog):	# prog = os or rfs
 
-	sig_prog_df = pd.read_csv('D:\\MCGDYY\\ont_project\\prognosis\\sig_res_' + prog + '.csv')
+	sig_prog_df = pd.read_csv('D:\\MCGDYY\\ont_project\\NovelQuant_pipeline\\prognosis\\sig_res_' + prog + '.csv')
 	box_plot_df = 'order	transcript	log2FC	status' + '\n'
 
 	for i in sig_prog_df.index:
@@ -28,8 +28,8 @@ def create_bp_input(prog):	# prog = os or rfs
 		if trans_name not in DE_prog_novel_trans_list:
 			DE_prog_novel_trans_list.append(trans_name)
 
-	# with open('D:\\MCGDYY\\ont_project\\prognosis\\FC_boxplot_' + prog + '.txt', 'w') as w:
-	# 	w.write(box_plot_df)
+	with open('D:\\MCGDYY\\ont_project\\NovelQuant_pipeline\\prognosis\\FC_boxplot_' + prog + '.txt', 'w') as w:
+		w.write(box_plot_df)
 
 create_bp_input('os')
 create_bp_input('rfs')
@@ -50,7 +50,7 @@ for i in DE_prog_novel_trans_list:
 					break
 			line = master_seq.readline()
 
-with open('D:\\MCGDYY\\ont_project\\lncRNA\\lncRNA_pred\\DE_clinical_novel_trans_real_seq.fa', 'w') as w:
+with open('D:\\MCGDYY\\ont_project\\NovelQuant_pipeline\\coding_pred\\DE_clinical_novel_trans_real_seq.fa', 'w') as w:
 	w.write(extracted_seq)
 
 
@@ -61,5 +61,5 @@ DE_prog_parent_genes = ''
 for i in DE_prog_novel_trans_list:
 	parent_gene = all_novel_list.loc[i, 1]
 	DE_prog_parent_genes += i + '\t' + parent_gene + '\n'
-with open('D:\\MCGDYY\\ont_project\\prognosis\\DE_prog_parent_genes.txt', 'w') as w:
+with open('D:\\MCGDYY\\ont_project\\NovelQuant_pipeline\\prognosis\\DE_prog_parent_genes.txt', 'w') as w:
 	w.write(DE_prog_parent_genes)

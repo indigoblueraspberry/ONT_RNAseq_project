@@ -1,10 +1,10 @@
 import pandas as pd
 from scipy import stats
 
-novel_counts = pd.read_csv('D:\\MCGDYY\\ont_project\\quantification\\t_exp_median.csv', index_col = 0)
+novel_counts = pd.read_csv('D:\\MCGDYY\\ont_project\\NovelQuant_pipeline\\t_exp_median.csv', index_col = 0)
 all_counts_df = pd.read_csv('D:\\MCGDYY\\ont_project\\quantification\\all_counts.csv', index_col = 0)
 novel_t2g = pd.read_csv('D:\\MCGDYY\\ont_project\\lists\\all_novel_list.txt', index_col = 0, names = ['gene'], sep = '\t')
-DE_novel = pd.read_csv('D:\\MCGDYY\\ont_project\\lncRNA\\lncRNA_pred\\intersec_novel_lncRNA.csv', index_col = 0)
+DE_novel = pd.read_csv('D:\\MCGDYY\\ont_project\\NovelQuant_pipeline\\lncRNA\\intersec_novel_lncRNA.csv', index_col = 0)
 DE_anno = pd.read_csv('D:\\MCGDYY\\ont_project\\lncRNA\\DE_anno_mRNA.csv', index_col = 0)
 anno_t2g = pd.read_csv('D:\\MCGDYY\\ont_project\\lists\\anno_mRNA_trans.txt', index_col = 1, names = ['gene', 'xx', 'xxx'], sep = '\t')
 
@@ -38,8 +38,8 @@ for i in clean_novel.columns:
 		if g1 != g2:
 			if abs(rho) > 0.8 and pval < 0.05:
 				sig_table.loc[k, i] = str(rho) + ', ' + str(pval)
-# sum_table.to_csv('D:\\MCGDYY\\ont_project\\lncRNA\\all_cor_novel_anno.csv')				
-# sig_table.to_csv('D:\\MCGDYY\\ont_project\\lncRNA\\raw_sig_cor_novel_anno.csv')
+sum_table.to_csv('D:\\MCGDYY\\ont_project\\NovelQuant_pipeline\\lncRNA\\all_cor_novel_anno.csv')				
+sig_table.to_csv('D:\\MCGDYY\\ont_project\\NovelQuant_pipeline\\lncRNA\\raw_sig_cor_novel_anno.csv')
 
 # annotate results
 novel_names = pd.read_csv('D:\\MCGDYY\\ont_project\\lists\\all_novel_list.txt', index_col = 0, header = None, sep = '\t')
@@ -62,4 +62,4 @@ for i in sig_table.columns:
 			final_table.loc[cur_len, 'anno'] = trans_2_gene[trans_2_gene[1] == k].iloc[0, 2]
 			final_table.loc[cur_len, 'rho'] = sig_table.loc[k, i].split(',')[0]
 			final_table.loc[cur_len, 'p-value'] = sig_table.loc[k, i].split(',')[1]
-# final_table.to_csv('D:\\MCGDYY\\ont_project\\lncRNA\\compiled_sig_cor_novel_anno.csv', index = False)
+final_table.to_csv('D:\\MCGDYY\\ont_project\\NovelQuant_pipeline\\lncRNA\\compiled_sig_cor_novel_anno.csv', index = False)
