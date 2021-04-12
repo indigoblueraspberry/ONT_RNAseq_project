@@ -29,7 +29,7 @@ import  re
 
 # convert gtf to a list of dicts
 
-def convert_gtf(gtf_path, tool):
+def convert_gtf(gtf_path):
 
 	trans_list = []
 	trans_dict = {}
@@ -47,22 +47,16 @@ def convert_gtf(gtf_path, tool):
 					chrom = line.split('\t')[0]
 					trans_start = int(line.split('\t')[3])
 					trans_end = int(line.split('\t')[4])
-
-					if tool == 'gffcompare':
-						trans_type = re.findall(r'class_code "(.*?)";', line)[0]
-						if trans_type == '=':
-							trans_type = 'annotated'
-							trans_id = re.findall(r'cmp_ref "(.*?)";', line)[0]
-						# intergenic
-						elif trans_type == 'u':
-							trans_type = 'intergenic'
-							trans_id = 'intergenic'
-						else:
-							trans_type = 'novel_genic'
-							trans_id = re.findall(r'cmp_ref "(.*?)";', line)[0]
-					if tool == 'flair':
-						trans_id = line.split('\t')[-1]
-						trans_type = 'flair'
+					trans_type = re.findall(r'class_code "(.*?)";', line)[0]
+					if trans_type == '=':
+						trans_type = 'annotated'
+						trans_id = re.findall(r'cmp_ref "(.*?)";', line)[0]
+					elif trans_type == 'u':
+						trans_type = 'intergenic'
+						trans_id = 'intergenic'
+					else:
+						trans_type = 'novel_genic'
+						trans_id = re.findall(r'cmp_ref "(.*?)";', line)[0]
 
 					trans_dict = {'trans_type': trans_type, 'trans_id': trans_id, 'chrom': chrom, 'trans_start': trans_start, 'trans_end': trans_end}
 					ex_count = 0
@@ -84,6 +78,9 @@ def compare(in_gtf_a, in_gtf_b, bp_diff = 5):
 	intersec_one = []
 	# retain transcript info from both a and b
 	intersec_both = []
+	total = len(in_gtf_a)
+	counter = 0
+	counter_list = []
 
 	for entry_a in in_gtf_a:
 		len_a = len(entry_a)
@@ -97,7 +94,7 @@ def compare(in_gtf_a, in_gtf_b, bp_diff = 5):
 			if chrom_a == entry_b['chrom']:
 				tried = True			
 				if len_a == len(entry_b):
-					# try to fine match two entries, two entries less than 10 bp are the same transcript
+					# try to fine match two entries, two entries less than diff bp are the same transcript
 					for i in range(5, len_a):
 						diff = abs(list(entry_a.values())[i] - list(entry_b.values())[i])
 						if diff <= bp_diff:	# base pair difference default is 5 bp
@@ -119,12 +116,52 @@ def compare(in_gtf_a, in_gtf_b, bp_diff = 5):
 				if tried:
 					break
 
+		# visualize with an odometer
+		counter += 1
+		percent = round(100*counter/total)		
+		if percent not in counter_list:
+			 counter_list.append(percent)
+			 print(percent)
+
 	return intersec_one, intersec_both, in_gtf_a, in_gtf_b
 
+def write_it_out(in_dict, out_path):
 
-in_gtf_a = convert_gtf('D:\\MCGDYY\\ont_project\\test\\sclp.sub.gtf', 'gffcompare')
-print('list a done')
-in_gtf_b = convert_gtf('D:\\MCGDYY\\ont_project\\test\\st.sub.gtf', 'gffcompare')
-print('list b done')
-intersec_one, intersec_both, in_gtf_a, in_gtf_b = compare(in_gtf_a, in_gtf_b)
+	holder = ''
+	for i in in_dict:
+		line = '\t'.join(str(k) for k in i.values())
+		holder += line + '\n'
 
+	with open(out_path, 'w') as w:
+		w.write(holder)
+
+
+in_gtf_st = convert_gtf('D:\\MCGDYY\\ont_project\\test\\sclp.sub.gtf')
+print('list st done')
+in_gtf_sclp = convert_gtf('D:\\MCGDYY\\ont_project\\test\\sclp.sub.gtf')
+print('list sclp done')
+in_gtf_flair = convert_gtf('D:\\MCGDYY\\ont_project\\test\\sclp.sub.gtf')
+print('list flair done')
+
+st_sclp, st_sclp_detail, uniq_st, uniq_sclp = compare(in_gtf_st, in_gtf_sclp)
+print('st and sclp done')
+ngs_flair, ngs_flair_detail, uniq_ngs, uniq_flair = compare(st_sclp, in_gtf_flair)
+print('ngs and flair done')
+
+write_it_out(st_sclp, 'D:\\MCGDYY\\ont_project\\test\\st_sclp.txt')
+write_it_out(uniq_st, 'D:\\MCGDYY\\ont_project\\test\\uniq_st.txt')
+write_it_out(uniq_sclp, 'D:\\MCGDYY\\ont_project\\test\\uniq_sclp.txt')
+lines = ''
+for line in st_sclp_detail:
+	lines += line + '\n'
+with open('D:\\MCGDYY\\ont_project\\test\\st_sclp_detail.txt', 'w') as w:
+	w.write(lines)
+
+write_it_out(ngs_flair, 'D:\\MCGDYY\\ont_project\\test\\ngs_flair.txt')
+write_it_out(uniq_ngs, 'D:\\MCGDYY\\ont_project\\test\\uniq_ngs.txt')
+write_it_out(uniq_flair, 'D:\\MCGDYY\\ont_project\\test\\uniq_flair.txt')
+lines = ''
+for line in ngs_flair_detail:
+	lines += line + '\n'
+with open('D:\\MCGDYY\\ont_project\\test\\ngs_flair_detail.txt', 'w') as w:
+	w.write(lines)
