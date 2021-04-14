@@ -94,10 +94,17 @@ def compare(in_gtf_a, in_gtf_b, bp_diff = 5):
 			if chrom_a == entry_b['chrom']:
 				tried = True			
 				if len_a == len(entry_b):
-					# try to fine match two entries, two entries less than diff bp are the same transcript
+					# try to fine match two entries
+					# two INTRON chains less than diff bp are the same transcript
+					# two free ends of terminal exons less than 100 bp are considered the same, also for single-exon
+					go = True
 					for i in range(5, len_a):
 						diff = abs(list(entry_a.values())[i] - list(entry_b.values())[i])
-						if diff <= bp_diff:	# base pair difference default is 5 bp
+						if i == 5 and diff <= 100:
+							go = True
+						elif 5 < i < len_a - 1 and diff <= bp_diff:	# base pair difference default is 5 bp
+							go = True
+						elif i == len_a - 1 and diff <= 100:
 							go = True
 						else:
 							go = False
